@@ -583,7 +583,10 @@ async function moveOrder(orderId,targetLane){
   if(targetLane==="cancel" && !confirm("ยืนยันยกเลิกออเดอร์ "+orderId+" ?")) return;
 
   const original={...o};
-  const updates=updatesForMove(targetLane);
+  const updates={
+    ...updatesForMove(targetLane),
+    status_updated_by: authSession.email,
+  };
   Object.assign(o,updates); render(); // optimistic
 
   if(demoMode){ toast("(Demo) ย้าย "+orderId+" แล้ว — ยังไม่บันทึกลงชีตจริง"); return; }
