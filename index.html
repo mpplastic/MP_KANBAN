@@ -6,6 +6,7 @@
 <title>MP Plastic · บอร์ดออเดอร์ตัดผ้า</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Anuphan:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
     --bg:#0D1526;            /* dark navy canvas */
@@ -68,6 +69,27 @@
   .btn-white{background:#fff;color:var(--card-ink);border-color:var(--card-line)}
   .btn-green{background:var(--green-badge);color:#fff}
   .btn-red{background:var(--red-badge);color:#fff}
+
+  /* ── Google authentication ── */
+  .auth-gate{position:fixed;inset:0;z-index:300;background:
+    radial-gradient(700px 400px at 50% 0%,rgba(59,118,232,.18),transparent 65%),var(--bg);
+    display:flex;align-items:center;justify-content:center;padding:20px}
+  .auth-gate.hidden{display:none}
+  .auth-card{width:min(420px,100%);background:#fff;color:var(--card-ink);border-radius:18px;
+    padding:30px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+  .auth-logo{width:60px;height:60px;border-radius:16px;margin:0 auto 16px;background:linear-gradient(150deg,#12805E,#0B5C43);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700}
+  .auth-card h2{font-size:22px;margin-bottom:7px}
+  .auth-card p{color:var(--card-muted);line-height:1.55;margin-bottom:20px}
+  #googleSignIn{display:flex;justify-content:center;min-height:44px}
+  .auth-error{display:none;margin-top:16px;padding:10px 12px;border-radius:9px;background:var(--red-soft);color:var(--red);
+    font-size:13px;font-weight:600;line-height:1.45}
+  .auth-error.show{display:block}
+  .auth-user{display:none;align-items:center;gap:9px;padding:5px 7px 5px 11px;border:1px solid var(--line);
+    border-radius:10px;background:rgba(255,255,255,.06)}
+  .auth-user.show{display:flex}
+  .auth-user-text{max-width:180px;color:var(--ink);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .auth-user button{height:32px;padding:6px 10px;border-radius:8px;margin:0}
 
   /* ── Demo banner ── */
   .banner{background:#FBF3D5;color:#4A3A08;font-size:14.5px;font-weight:500;
@@ -175,6 +197,16 @@
 </head>
 <body>
 
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <div class="auth-logo">MP</div>
+    <h2>เข้าสู่ระบบ MP Kanban</h2>
+    <p>ใช้บัญชี Google ที่บริษัทอนุญาต เพื่อดูออเดอร์และเปลี่ยนสถานะ</p>
+    <div id="googleSignIn"></div>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
 <header>
   <div class="brand">
     <div class="logo">MP</div>
@@ -198,6 +230,10 @@
     <button class="btn btn-gold" id="btnSettings">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06A2 2 0 1 1 7.07 4.2l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
       ตั้งค่า</button>
+    <div class="auth-user" id="authUser">
+      <span class="auth-user-text" id="authEmail"></span>
+      <button class="btn btn-ghost" id="btnLogout" type="button">ออก</button>
+    </div>
   </div>
 </header>
 
@@ -254,7 +290,103 @@
 const CONFIG = {
   GET_URL:  "https://n8n114163.metaelearning.online/webhook/mp-orders",   // n8n webhook: GET รายการออเดอร์ (JSON)
   POST_URL: "https://n8n114163.metaelearning.online/webhook/mp-orders-update",   // n8n webhook: POST อัปเดตสถานะ { orderId, updates:{...} }
+  GOOGLE_CLIENT_ID: "715879257663-o0i9gmuddn4duchh2adkela1dmfe8i0b.apps.googleusercontent.com",
+  ALLOWED_EMAILS: [
+    "manuthamplastic@gmail.com",
+    "psgrst@gmail.com",
+    "pekky_k@yahoo.com",
+  ],
 };
+
+/* ═══════ Google Login ═══════ */
+const AUTH_STORAGE_KEY="mp_kanban_google_session";
+let authSession=null;
+
+function decodeJwtPayload(token){
+  try{
+    const part=token.split(".")[1];
+    const normalized=part.replace(/-/g,"+").replace(/_/g,"/");
+    const json=decodeURIComponent(atob(normalized).split("").map(c=>"%"+("00"+c.charCodeAt(0).toString(16)).slice(-2)).join(""));
+    return JSON.parse(json);
+  }catch(_){ return null; }
+}
+function normalizedAllowedEmails(){
+  return CONFIG.ALLOWED_EMAILS.map(v=>String(v).trim().toLowerCase()).filter(Boolean);
+}
+function validateGoogleTokenForUi(idToken){
+  const p=decodeJwtPayload(idToken);
+  const now=Math.floor(Date.now()/1000);
+  if(!p) return {ok:false,message:"อ่านข้อมูลการเข้าสู่ระบบไม่ได้"};
+  if(p.aud!==CONFIG.GOOGLE_CLIENT_ID) return {ok:false,message:"บัญชีนี้ไม่ได้ออก token สำหรับ MP Kanban"};
+  if(!["accounts.google.com","https://accounts.google.com"].includes(p.iss)) return {ok:false,message:"ผู้ออก token ไม่ถูกต้อง"};
+  if(!p.exp || p.exp<=now) return {ok:false,message:"การเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบใหม่"};
+  if(p.email_verified!==true) return {ok:false,message:"อีเมล Google ยังไม่ได้รับการยืนยัน"};
+  const email=String(p.email||"").trim().toLowerCase();
+  const allowed=normalizedAllowedEmails();
+  if(!allowed.length) return {ok:false,message:"ระบบยังไม่ได้กำหนดรายชื่ออีเมลที่อนุญาต"};
+  if(!allowed.includes(email)) return {ok:false,message:"อีเมล "+email+" ไม่มีสิทธิ์เข้าใช้งาน"};
+  return {ok:true,email,name:p.name||email,exp:p.exp};
+}
+function showAuthError(message){
+  const el=document.getElementById("authError");
+  el.textContent=message||"เข้าสู่ระบบไม่สำเร็จ";
+  el.classList.add("show");
+}
+function setAuthenticatedSession(session){
+  authSession=session;
+  sessionStorage.setItem(AUTH_STORAGE_KEY,JSON.stringify(session));
+  document.getElementById("authGate").classList.add("hidden");
+  document.getElementById("authUser").classList.add("show");
+  document.getElementById("authEmail").textContent=session.email;
+  loadOrders();
+}
+function handleGoogleCredential(response){
+  const idToken=response?.credential||"";
+  const checked=validateGoogleTokenForUi(idToken);
+  if(!checked.ok){ showAuthError(checked.message); return; }
+  setAuthenticatedSession({idToken,email:checked.email,name:checked.name,exp:checked.exp});
+}
+function restoreAuthSession(){
+  try{
+    const saved=JSON.parse(sessionStorage.getItem(AUTH_STORAGE_KEY)||"null");
+    const checked=validateGoogleTokenForUi(saved?.idToken||"");
+    if(!checked.ok) return false;
+    setAuthenticatedSession({...saved,email:checked.email,name:checked.name,exp:checked.exp});
+    return true;
+  }catch(_){ return false; }
+}
+function authHeaders(withJson=false){
+  const headers={Authorization:"Bearer "+authSession.idToken};
+  if(withJson) headers["Content-Type"]="application/json";
+  return headers;
+}
+function initGoogleLogin(){
+  if(restoreAuthSession()) return;
+  let tries=0;
+  const waitForGoogle=setInterval(()=>{
+    tries++;
+    if(window.google?.accounts?.id){
+      clearInterval(waitForGoogle);
+      google.accounts.id.initialize({client_id:CONFIG.GOOGLE_CLIENT_ID,callback:handleGoogleCredential});
+      google.accounts.id.renderButton(document.getElementById("googleSignIn"),{
+        theme:"outline",size:"large",shape:"rectangular",text:"signin_with",locale:"th",width:320
+      });
+      if(!normalizedAllowedEmails().length) showAuthError("กรุณาเพิ่มอีเมลที่อนุญาตใน CONFIG.ALLOWED_EMAILS ก่อนใช้งาน");
+    }else if(tries>=50){
+      clearInterval(waitForGoogle);
+      showAuthError("โหลดระบบ Google Login ไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วรีเฟรชหน้า");
+    }
+  },100);
+}
+function logout(){
+  if(authSession?.email && window.google?.accounts?.id) google.accounts.id.disableAutoSelect();
+  authSession=null;
+  orders=[];
+  sessionStorage.removeItem(AUTH_STORAGE_KEY);
+  document.getElementById("authUser").classList.remove("show");
+  document.getElementById("authGate").classList.remove("hidden");
+  document.getElementById("authError").classList.remove("show");
+}
 
 /* ── นิยามเลน (ตามที่ยืนยัน 2026-07-02) ── */
 const LANES = [
@@ -338,11 +470,12 @@ const laneLimits=Object.fromEntries(LANES.map(l=>[l.key,CARDS_PER_BATCH]));
 let orders=[], demoMode=false;
 
 async function loadOrders(){
+  if(!authSession){ showAuthError("กรุณาเข้าสู่ระบบก่อนโหลดข้อมูล"); return; }
   if(!CONFIG.GET_URL){ demoMode=true; orders=DEMO.slice(); document.getElementById("demoBanner").style.display="flex"; render(); return; }
   demoMode=false; document.getElementById("demoBanner").style.display="none";
   toast('<span class="spin"></span>กำลังโหลดออเดอร์...',0);
   try{
-    const r=await fetch(CONFIG.GET_URL);
+    const r=await fetch(CONFIG.GET_URL,{headers:authHeaders(),cache:"no-store"});
     if(!r.ok) throw new Error("HTTP "+r.status);
     const data=await r.json();
     orders=Array.isArray(data)?data:(data.orders||[]);
@@ -441,6 +574,9 @@ function cardEl(o){
 
 /* ═══════ Move / write-back ═══════ */
 async function moveOrder(orderId,targetLane){
+  if(!authSession){ showAuthError("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่"); logout(); return; }
+  const authCheck=validateGoogleTokenForUi(authSession.idToken);
+  if(!authCheck.ok){ logout(); showAuthError(authCheck.message); return; }
   const o=orders.find(x=>x["Order ID"]===orderId); if(!o) return;
   if(laneOf(o)===targetLane) return;
   if(targetLane==="wait" && !confirm("ย้ายกลับไป 'มัดจำ (รอดำเนินการ)' จะล้างสถานะ ตัดแล้ว/ส่งแล้ว/จ่ายเงินแล้ว — ยืนยัน?")) return;
@@ -454,8 +590,8 @@ async function moveOrder(orderId,targetLane){
   toast('<span class="spin"></span>กำลังบันทึกลง Google Sheet...',0);
   let loadedFreshData=false;
   try{
-    const r=await fetch(CONFIG.POST_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({orderId,rowNumber:o["row_number"],updates})});
+    const r=await fetch(CONFIG.POST_URL,{method:"POST",headers:authHeaders(true),
+      body:JSON.stringify({orderId,rowNumber:o["row_number"],updates,idToken:authSession.idToken})});
     if(!r.ok) throw new Error("HTTP "+r.status);
 
     const responseText=await r.text();
@@ -470,7 +606,7 @@ async function moveOrder(orderId,targetLane){
 
     // n8n อาจตอบ 200 แม้หาแถวไม่พบ จึงต้องอ่านค่าจริงกลับมาตรวจอีกครั้ง
     const separator=CONFIG.GET_URL.includes("?")?"&":"?";
-    const verify=await fetch(CONFIG.GET_URL+separator+"_="+Date.now(),{cache:"no-store"});
+    const verify=await fetch(CONFIG.GET_URL+separator+"_="+Date.now(),{headers:authHeaders(),cache:"no-store"});
     if(!verify.ok) throw new Error("ตรวจสอบผลบันทึกไม่ได้ (HTTP "+verify.status+")");
     const data=await verify.json();
     const freshOrders=Array.isArray(data)?data:(data.orders||[]);
@@ -531,13 +667,14 @@ document.getElementById("btnSettings").onclick=()=>{
   openOv("ovSettings");
 };
 document.getElementById("btnReload").onclick=loadOrders;
+document.getElementById("btnLogout").onclick=logout;
 document.getElementById("q").addEventListener("input",render);
 document.getElementById("fAdmin").addEventListener("change",render);
 document.getElementById("fThick").addEventListener("change",render);
 document.getElementById("fPayment").addEventListener("change",render);
 document.querySelectorAll(".overlay").forEach(ov=>ov.addEventListener("click",e=>{if(e.target===ov)ov.classList.remove("open")}));
 
-loadOrders();
+initGoogleLogin();
 </script>
 </body>
 </html>
