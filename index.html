@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MP Plastic · บอร์ดออเดอร์ตัดผ้า</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Anuphan:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0D1526;            /* dark navy canvas */
+    --bg-elev:#0A1120;       /* header */
+    --panel:rgba(255,255,255,.03);
+    --line:rgba(255,255,255,.12);
+    --ink:#F4F7FB;           /* text on dark */
+    --muted:#93A1B5;
+    --card:#FFFFFF;
+    --card-ink:#1C2733;
+    --card-muted:#6B7A8C;
+    --card-line:#E4E9EF;
+
+    --gold:#C99212;   --gold-badge:#E3A008; --gold-soft:#FDF3D7; --gold-ink:#8A6408;
+    --green:#1B7A46;  --green-badge:#2BB569;--green-soft:#E4F5EA;
+    --blue:#1D4FB8;   --blue-badge:#3B76E8; --blue-soft:#E8F0FE; --blue-ink:#1A56C4;
+    --purple:#7152B8; --purple-badge:#9674E6;
+    --teal:#0F7D68;   --teal-badge:#17B097;
+    --red:#C0392B;    --red-badge:#E85647;  --red-soft:#FDE8E6;
+
+    --r:12px;
+    --font:'Inter','Anuphan',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --t:150ms ease;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.3;
+    -webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+  .num{font-variant-numeric:tabular-nums}
+  svg{display:block}
+
+  /* ── Header ── */
+  header{background:var(--bg-elev);border-bottom:1px solid var(--line);
+    padding:12px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+    position:sticky;top:0;z-index:50}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(150deg,#12805E,#0B5C43);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;letter-spacing:.5px}
+  .brand h1{font-size:18px;font-weight:700;line-height:1.15;color:var(--ink)}
+  .brand h1 small{display:block;font-size:12.5px;font-weight:400;color:var(--muted);margin-top:1px}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-left:auto}
+  .search{position:relative}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.55}
+  .toolbar input[type=search]{padding-left:36px}
+  .toolbar input[type=search], .toolbar select{
+    background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink);
+    border-radius:10px;padding:10px 14px;height:44px;font-family:inherit;font-size:14px;min-width:150px;
+    transition:border-color var(--t)}
+  .toolbar input::placeholder{color:var(--muted)}
+  .toolbar input:focus, .toolbar select:focus{outline:none;border-color:rgba(255,255,255,.35)}
+  .toolbar select option{color:#1C2733;background:#fff}
+
+  .btn{font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;border-radius:10px;
+    padding:10px 16px;height:44px;border:1px solid transparent;display:inline-flex;align-items:center;gap:8px;
+    transition:filter var(--t),border-color var(--t)}
+  .btn:hover{filter:brightness(1.1)}
+  .btn:focus-visible{outline:2px solid #6EA8FE;outline-offset:2px}
+  .btn-ghost{background:rgba(255,255,255,.06);color:var(--ink);border-color:var(--line)}
+  .btn-gold{background:var(--gold-badge);color:#231A02}
+  .btn-white{background:#fff;color:var(--card-ink);border-color:var(--card-line)}
+  .btn-green{background:var(--green-badge);color:#fff}
+  .btn-red{background:var(--red-badge);color:#fff}
+
+  /* ── Demo banner ── */
+  .banner{background:#FBF3D5;color:#4A3A08;font-size:14.5px;font-weight:500;
+    margin:14px 16px 0;padding:13px 20px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:10px;text-align:center}
+  .banner b{font-weight:700}
+
+  /* ── Board ── */
+  .board-wrap{padding:16px;overflow-x:auto;flex:1;min-height:0}
+  .board{display:flex;gap:14px;height:100%;align-items:stretch}
+  .lane{flex:1 1 0;min-width:270px;display:flex;flex-direction:column;max-height:100%;
+    border:1px solid var(--lane-c);border-radius:14px;background:var(--panel)}
+  .lane-head{background:var(--lane-c);color:#fff;border-radius:13px 13px 0 0;
+    padding:16px 18px 14px}
+  .lane-head .row1{display:flex;align-items:center;gap:10px}
+  .lane-title{font-size:17px;font-weight:700}
+  .lane-count{margin-left:auto;background:var(--lane-badge);color:#fff;min-width:28px;height:28px;
+    border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:700;padding:0 9px}
+  .lane-sum{font-size:13.5px;font-weight:500;opacity:.9;margin-top:4px}
+
+  .l-wait  {--lane-c:var(--gold); --lane-badge:var(--gold-badge)}
+  .l-cut   {--lane-c:var(--green);--lane-badge:var(--green-badge)}
+  .l-ship  {--lane-c:var(--blue); --lane-badge:var(--blue-badge)}
+  .l-collect{--lane-c:var(--purple);--lane-badge:var(--purple-badge)}
+  .l-paid  {--lane-c:var(--teal); --lane-badge:var(--teal-badge)}
+  .l-cancel{--lane-c:var(--red);  --lane-badge:var(--red-badge)}
+
+  .lane-body{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px;min-height:110px;
+    padding:14px;transition:background var(--t);border-radius:0 0 13px 13px}
+  .lane-body.dragover{background:rgba(255,255,255,.05)}
+  .lane-body::-webkit-scrollbar{width:8px}
+  .lane-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:8px}
+  .lane-body::-webkit-scrollbar-track{background:transparent}
+  .lane-empty{color:var(--muted);font-size:13px;text-align:center;margin:auto;padding:24px 0}
+  .lane-load-more{width:100%;margin:2px 0 8px;padding:10px 12px;border:1px solid rgba(255,255,255,.18);
+    border-radius:10px;background:rgba(255,255,255,.08);color:#dbeafe;font-weight:700;cursor:pointer}
+  .lane-load-more:hover{background:rgba(255,255,255,.14)}
+
+  /* ── Card (white on dark) ── */
+  .card{background:var(--card);border-radius:12px;padding:14px 16px;cursor:grab;color:var(--card-ink);
+    box-shadow:0 2px 8px rgba(0,0,0,.35);transition:opacity var(--t),transform var(--t)}
+  .card:hover{transform:translateY(-1px)}
+  .card:active{cursor:grabbing}
+  .card.dragging{opacity:.45}
+  .card .cid{font-family:'Inter',monospace;font-size:12.5px;color:var(--card-muted);letter-spacing:.4px;
+    display:flex;justify-content:space-between;gap:8px}
+  .card .cname{font-size:16.5px;font-weight:700;color:var(--card-ink);margin:6px 0 9px}
+  .card .cspec{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+  .chip{font-size:12.5px;font-weight:600;border-radius:7px;padding:4px 10px;background:#F1F3F4;color:var(--card-ink)}
+  .chip.th{background:var(--blue-soft);color:var(--blue-ink)}
+  .card .cfoot{display:flex;align-items:center;gap:8px}
+  .price{font-size:17px;font-weight:700;color:var(--card-ink)}
+  .pay-badge{margin-left:auto;font-size:12.5px;font-weight:700;border-radius:8px;padding:4px 11px}
+  .pay-full{background:var(--green-soft);color:var(--green)}
+  .pay-dep{background:var(--gold-soft);color:var(--gold-ink)}
+  .pay-none{background:var(--red-soft);color:var(--red)}
+  .cmeta{font-size:12.5px;color:var(--card-muted);margin-top:10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .cmeta span{display:inline-flex;align-items:center;gap:5px}
+  .cmeta svg{opacity:.6}
+  .note-flag{color:var(--gold-ink);font-weight:600}
+  .note-flag svg{opacity:1}
+
+  /* ── Modal ── */
+  .overlay{position:fixed;inset:0;background:rgba(5,10,20,.65);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+  .overlay.open{display:flex}
+  .modal{background:#fff;color:var(--card-ink);border-radius:16px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;padding:26px}
+  .modal h2{font-size:20px;font-weight:700;margin-bottom:3px}
+  .modal .sub{color:var(--card-muted);font-size:13px;margin-bottom:18px}
+  .kv{display:grid;grid-template-columns:130px 1fr;gap:8px 14px;font-size:14px;margin-bottom:14px}
+  .kv dt{color:var(--card-muted)}
+  .kv dd{font-weight:500}
+  .move-label{font-size:12px;color:var(--card-muted);font-weight:700;letter-spacing:.4px;margin-bottom:8px;text-transform:uppercase}
+  .move-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .move-row .btn{height:40px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  .field input{width:100%;border:1px solid var(--card-line);border-radius:10px;padding:11px 14px;height:44px;font-family:inherit;font-size:14px;color:var(--card-ink)}
+  .field input:focus{outline:none;border-color:var(--blue-badge)}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+  .hr{border:none;border-top:1px solid var(--card-line);margin:18px 0}
+
+  /* ── Toast ── */
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+    background:#fff;color:var(--card-ink);padding:12px 20px;border-radius:12px;
+    font-size:14px;font-weight:600;display:none;z-index:200;box-shadow:0 6px 24px rgba(0,0,0,.45)}
+  .toast.show{display:block}
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,.2);border-top-color:var(--card-ink);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:8px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.spin{animation:none}*{transition:none!important}}
+
+  @media (max-width:900px){
+    .lane{flex:0 0 auto;width:300px}
+  }
+  @media (max-width:640px){
+    header{padding:10px 12px}
+    .toolbar{width:100%}
+    .search{flex:1}
+    .search input{width:100%;min-width:0}
+    .banner{margin:10px 12px 0}
+    .board-wrap{padding:12px}
+    .lane{width:86vw;min-width:86vw}
+    .kv{grid-template-columns:104px 1fr}
+    .modal{padding:20px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">MP</div>
+    <h1>บอร์ดออเดอร์ตัดผ้า<small>Manutham Plastics · Order Kanban</small></h1>
+  </div>
+  <div class="toolbar">
+    <span class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="q" placeholder="ค้นหา ชื่อ / เบอร์ / Order">
+    </span>
+    <select id="fAdmin"><option value="">แอดมิน: ทั้งหมด</option></select>
+    <select id="fThick"><option value="">ความหนา: ทั้งหมด</option></select>
+    <select id="fPayment">
+      <option value="">การชำระเงิน: ทั้งหมด</option>
+      <option value="unpaid">เฉพาะยังไม่จ่าย</option>
+      <option value="paid">เฉพาะจ่ายแล้ว</option>
+    </select>
+    <button class="btn btn-ghost" id="btnReload">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+      โหลดใหม่</button>
+    <button class="btn btn-gold" id="btnSettings">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06A2 2 0 1 1 7.07 4.2l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
+      ตั้งค่า</button>
+  </div>
+</header>
+
+<div class="banner" id="demoBanner" style="display:none">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+  <span>กำลังแสดง<b>ข้อมูลตัวอย่าง (Demo)</b> — กด <b>ตั้งค่า</b> เพื่อใส่ n8n Webhook URL แล้วระบบจะดึงออเดอร์จริงจาก Google Sheet</span>
+</div>
+
+<div class="board-wrap">
+  <div class="board" id="board"></div>
+</div>
+
+<!-- Order detail modal -->
+<div class="overlay" id="ovDetail">
+  <div class="modal">
+    <h2 id="dName"></h2>
+    <div class="sub" id="dId"></div>
+    <dl class="kv" id="dKv"></dl>
+    <hr class="hr">
+    <div class="move-label">ย้ายสถานะ</div>
+    <div class="move-row" id="dMoves"></div>
+    <div class="modal-actions">
+      <button class="btn btn-white" onclick="closeOv('ovDetail')">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="overlay" id="ovSettings">
+  <div class="modal">
+    <h2>ตั้งค่าเชื่อมต่อ n8n</h2>
+    <div class="sub">วาง Webhook URL จาก n8n instance ของบริษัท (ดูวิธีตั้งค่าใน README)</div>
+    <div class="field">
+      <label>GET Orders URL — อ่านออเดอร์จาก Sheet</label>
+      <input id="sGet" placeholder="https://n8n.yourdomain.com/webhook/mp-orders">
+    </div>
+    <div class="field">
+      <label>POST Update URL — บันทึกเมื่อลากเปลี่ยนสถานะ</label>
+      <input id="sPost" placeholder="https://n8n.yourdomain.com/webhook/mp-orders-update">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-white" onclick="closeOv('ovSettings')">ยกเลิก</button>
+      <button class="btn btn-green" onclick="saveSettings()">บันทึกและโหลดข้อมูล</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONFIG — แก้ตรงนี้ก่อน deploy (หรือใช้ปุ่ม ตั้งค่า ชั่วคราว)
+   ═══════════════════════════════════════════════════════════ */
+const CONFIG = {
+  GET_URL:  "https://n8n114163.metaelearning.online/webhook/mp-orders",   // n8n webhook: GET รายการออเดอร์ (JSON)
+  POST_URL: "https://n8n114163.metaelearning.online/webhook/mp-orders-update",   // n8n webhook: POST อัปเดตสถานะ { orderId, updates:{...} }
+};
+
+/* ── นิยามเลน (ตามที่ยืนยัน 2026-07-02) ── */
+const LANES = [
+  {key:"wait",  cls:"l-wait",  title:"มัดจำ (รอดำเนินการ)"},
+  {key:"cut",   cls:"l-cut",   title:"ตัดแล้ว"},
+  {key:"ship",  cls:"l-ship",  title:"ส่งแล้ว"},
+  {key:"collect",cls:"l-collect",title:"ตามเงิน"},
+  {key:"paid",  cls:"l-paid",  title:"จ่ายเงินแล้ว"},
+  {key:"cancel",cls:"l-cancel",title:"ยกเลิก"},
+];
+
+const ICON = {
+  person:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  truck:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18h-5"/><path d="M14 9h4l4 4v4a1 1 0 0 1-1 1h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>',
+  note:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>'
+};
+
+/* ── จัดเลนจากคอลัมน์ kanban_status ── */
+function laneOf(o){
+  const status = String(o["kanban_status"]||"").trim().toUpperCase();
+  const laneByStatus = {
+    READY_TO_CUT: "wait",
+    CUT_DONE:     "cut",
+    SHIPPED:      "ship",
+    DISPAY:       "collect",
+    COMPLETED:    "paid",
+    CANCELLED:    "cancel",
+    CANCELED:     "cancel",
+  };
+  return laneByStatus[status] || "wait";
+}
+
+/* ── สถานะการชำระเงิน ── */
+function isPaid(o){
+  const status = String(o["kanban_status"]||"").trim().toUpperCase();
+  return status === "COMPLETED" || String(o["จ่ายเงินแล้ว"]||"").trim() === "จ่ายเงินแล้ว";
+}
+function payState(o){
+  if (isPaid(o)) return {cls:"pay-full",label:"ชำระครบ"};
+  if ((o["มัดจำแล้ว"]||"").trim()) {
+    const dep = o["ยอดมัดจำ"] ? " ฿"+fmtNum(o["ยอดมัดจำ"]) : " 10%";
+    return {cls:"pay-dep",label:"มัดจำ"+dep};
+  }
+  return {cls:"pay-none",label:"ยังไม่ชำระ"};
+}
+
+/* ── การเขียนกลับชีตเมื่อย้ายเลน ── */
+function updatesForMove(target){
+  const today = thDate();
+  switch(target){
+    case "cut":  return {"kanban_status":"CUT_DONE","ตัดแล้ว":"ตัดแล้ว","ตัดเสร็จวันที่":today};
+    case "ship": return {"kanban_status":"SHIPPED","ส่งแล้ว":"ส่งแล้ว","วันที่ส่ง":today};
+    case "collect":return {"kanban_status":"DISPAY"};
+    case "paid": return {"kanban_status":"COMPLETED","จ่ายเงินแล้ว":"จ่ายเงินแล้ว","วันที่ชำระเงิน":today,"สถานะ":"จ่ายเงินแล้ว"};
+    case "cancel":return {"kanban_status":"CANCELLED","สถานะ":"ยกเลิก"};
+    case "wait": return {"kanban_status":"READY_TO_CUT","ตัดแล้ว":"","ส่งแล้ว":"","จ่ายเงินแล้ว":""};
+  }
+}
+function thDate(){
+  const d=new Date();
+  return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()+543}`;
+}
+function fmtNum(v){
+  const n=parseFloat(String(v).replace(/[, ]/g,""));
+  return isNaN(n)?String(v||""):n.toLocaleString("th-TH");
+}
+function money(o){return parseFloat(String(o["ราคารวม"]||"").replace(/[, ]/g,""))||0}
+
+/* ═══════ Demo data ═══════ */
+const DEMO = [
+  {"Order ID":"070726-01-001","วันที่":"7/7/2026","ชื่อ":"คุณสมชาย ใจดี","เบอร์โทร":"0812345678","ความหนา":"HDPE 0.5 มม.","ขนาด":"10 × 20 ม.","ราคารวม":"12000","แอดมิน":"พลอย","เพจ":"MP","หมายเหตุ":"แถมเสื้อ","มัดจำแล้ว":"✓","ยอดมัดจำ":"1200","สถานะ":"","ตัดแล้ว":"","ส่งแล้ว":"","จ่ายเงินแล้ว":""},
+  {"Order ID":"070726-02-002","วันที่":"7/7/2026","ชื่อ":"คุณวรรณา รักเกษตร","เบอร์โทร":"0898765432","ความหนา":"HDPE 2 มม.","ขนาด":"7 × 3.5 ม.","ราคารวม":"4900","แอดมิน":"เบล","เพจ":"รถบรรทุก","สถานะ":"","ตัดแล้ว":"ตัดแล้ว","ตัดเสร็จวันที่":"6/7/2569","ส่งแล้ว":"","จ่ายเงินแล้ว":"จ่ายเงินแล้ว"},
+  {"Order ID":"060726-01-003","วันที่":"6/7/2026","ชื่อ":"คุณประยุทธ บ่อปลา","เบอร์โทร":"0861112222","ความหนา":"HDPE 0.75 มม.","ขนาด":"15 × 25 ม.","ราคารวม":"30000","แอดมิน":"กมล","เพจ":"โทร","สถานะ":"","ตัดแล้ว":"ตัดแล้ว","ส่งแล้ว":"ส่งแล้ว","ขนส่ง":"Pond","จ่ายเงินแล้ว":"","มัดจำแล้ว":"✓","ยอดมัดจำ":"3000"},
+  {"Order ID":"050726-01-004","วันที่":"5/7/2026","ชื่อ":"คุณนภา สวนผัก","เบอร์โทร":"0933334444","ความหนา":"LDPE 0.3 มม.","ขนาด":"4 × 26 ม.","ราคารวม":"4160","แอดมิน":"จ๋า","เพจ":"ส้ม","สถานะ":"จ่ายเงินแล้ว","ตัดแล้ว":"ตัดแล้ว","ส่งแล้ว":"ส่งแล้ว","จ่ายเงินแล้ว":"จ่ายเงินแล้ว","Tracking No.":"TH0001DEMO"},
+  {"Order ID":"040726-01-005","วันที่":"4/7/2026","ชื่อ":"คุณมานะ เลี้ยงกุ้ง","เบอร์โทร":"0955556666","ความหนา":"Geotextile 150กรัม","ขนาด":"2 × 100 ม.","ราคารวม":"3600","แอดมิน":"เตย","เพจ":"Line","สถานะ":"ยกเลิก"},
+];
+
+/* ═══════ State & render ═══════ */
+const CARDS_PER_BATCH=100;
+const laneLimits=Object.fromEntries(LANES.map(l=>[l.key,CARDS_PER_BATCH]));
+let orders=[], demoMode=false;
+
+async function loadOrders(){
+  if(!CONFIG.GET_URL){ demoMode=true; orders=DEMO.slice(); document.getElementById("demoBanner").style.display="flex"; render(); return; }
+  demoMode=false; document.getElementById("demoBanner").style.display="none";
+  toast('<span class="spin"></span>กำลังโหลดออเดอร์...',0);
+  try{
+    const r=await fetch(CONFIG.GET_URL);
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const data=await r.json();
+    orders=Array.isArray(data)?data:(data.orders||[]);
+    toast("โหลดสำเร็จ · "+orders.length+" ออเดอร์");
+  }catch(e){
+    toast("โหลดไม่สำเร็จ: "+e.message+" — ตรวจ Webhook URL / CORS ใน n8n",5000);
+  }
+  render();
+}
+
+function buildFilters(){
+  const admins=[...new Set(orders.map(o=>(o["แอดมิน"]||"").trim()).filter(Boolean))].sort();
+  const thicks=[...new Set(orders.map(o=>(o["ความหนา"]||"").trim()).filter(Boolean))].sort();
+  fill("fAdmin","แอดมิน: ทั้งหมด",admins);
+  fill("fThick","ความหนา: ทั้งหมด",thicks);
+}
+function fill(id,first,items){
+  const cur=document.getElementById(id).value;
+  document.getElementById(id).innerHTML=`<option value="">${first}</option>`+items.map(v=>`<option${v===cur?" selected":""}>${esc(v)}</option>`).join("");
+}
+
+function visible(o){
+  const q=document.getElementById("q").value.trim().toLowerCase();
+  const fa=document.getElementById("fAdmin").value, ft=document.getElementById("fThick").value;
+  const fp=document.getElementById("fPayment").value;
+  if(fa && (o["แอดมิน"]||"").trim()!==fa) return false;
+  if(ft && (o["ความหนา"]||"").trim()!==ft) return false;
+  if(fp==="unpaid" && isPaid(o)) return false;
+  if(fp==="paid" && !isPaid(o)) return false;
+  if(q){
+    const hay=[o["Order ID"],o["ชื่อ"],o["เบอร์โทร"],o["Phone Number"]].join(" ").toLowerCase();
+    if(!hay.includes(q)) return false;
+  }
+  return true;
+}
+
+function render(){
+  buildFilters();
+  const board=document.getElementById("board"); board.innerHTML="";
+  for(const lane of LANES){
+    const items=orders.filter(o=>laneOf(o)===lane.key && visible(o));
+    const sortedItems=[...items].sort((a,b)=>(Number(b["row_number"])||0)-(Number(a["row_number"])||0));
+    const shownItems=sortedItems.slice(0,laneLimits[lane.key]);
+    const el=document.createElement("div");
+    el.className="lane "+lane.cls;
+    el.innerHTML=`<div class="lane-head">
+        <div class="row1"><span class="lane-title">${lane.title}</span><span class="lane-count num">${items.length}</span></div>
+      </div><div class="lane-body" data-lane="${lane.key}"></div>`;
+    const body=el.querySelector(".lane-body");
+    body.addEventListener("dragover",e=>{e.preventDefault();body.classList.add("dragover")});
+    body.addEventListener("dragleave",()=>body.classList.remove("dragover"));
+    body.addEventListener("drop",e=>{e.preventDefault();body.classList.remove("dragover");
+      const id=e.dataTransfer.getData("text/plain"); if(id) moveOrder(id,lane.key);});
+    if(items.length===0){
+      body.innerHTML=`<div class="lane-empty">ไม่มีออเดอร์ในสถานะนี้</div>`;
+    }else{
+      for(const o of shownItems) body.appendChild(cardEl(o));
+      if(shownItems.length<items.length){
+        const more=document.createElement("button");
+        more.type="button";
+        more.className="lane-load-more";
+        more.textContent=`แสดงเพิ่ม (${items.length-shownItems.length} รายการ)`;
+        more.addEventListener("click",()=>{laneLimits[lane.key]+=CARDS_PER_BATCH;render()});
+        body.appendChild(more);
+      }
+    }
+    board.appendChild(el);
+  }
+}
+
+function cardEl(o){
+  const p=payState(o);
+  const c=document.createElement("div");
+  c.className="card"; c.draggable=true;
+  c.innerHTML=`
+    <div class="cid num"><span>${esc(o["Order ID"]||"—")}</span><span>${esc(o["วันที่"]||"")}</span></div>
+    <div class="cname">${esc(o["ชื่อ"]||"ไม่ระบุชื่อ")}</div>
+    <div class="cspec">
+      <span class="chip th">${esc(o["ความหนา"]||"—")}</span>
+      <span class="chip">${esc(o["ขนาด"]||"—")}</span>
+    </div>
+    <div class="cfoot">
+      <span class="price num">฿${fmtNum(o["ราคารวม"])}</span>
+      <span class="pay-badge ${p.cls}">${p.label}</span>
+    </div>
+    <div class="cmeta">
+      ${o["แอดมิน"]?`<span>${ICON.person} ${esc(o["แอดมิน"])}</span>`:""}
+      ${o["ขนส่ง"]?`<span>${ICON.truck} ${esc(o["ขนส่ง"])}</span>`:""}
+      ${o["หมายเหตุ"]?`<span class="note-flag" title="${esc(o["หมายเหตุ"])}">${ICON.note} มีหมายเหตุ</span>`:""}
+    </div>`;
+  c.addEventListener("dragstart",e=>{e.dataTransfer.setData("text/plain",o["Order ID"]);c.classList.add("dragging")});
+  c.addEventListener("dragend",()=>c.classList.remove("dragging"));
+  c.addEventListener("click",()=>openDetail(o));
+  return c;
+}
+
+/* ═══════ Move / write-back ═══════ */
+async function moveOrder(orderId,targetLane){
+  const o=orders.find(x=>x["Order ID"]===orderId); if(!o) return;
+  if(laneOf(o)===targetLane) return;
+  if(targetLane==="wait" && !confirm("ย้ายกลับไป 'มัดจำ (รอดำเนินการ)' จะล้างสถานะ ตัดแล้ว/ส่งแล้ว/จ่ายเงินแล้ว — ยืนยัน?")) return;
+  if(targetLane==="cancel" && !confirm("ยืนยันยกเลิกออเดอร์ "+orderId+" ?")) return;
+
+  const original={...o};
+  const updates=updatesForMove(targetLane);
+  Object.assign(o,updates); render(); // optimistic
+
+  if(demoMode){ toast("(Demo) ย้าย "+orderId+" แล้ว — ยังไม่บันทึกลงชีตจริง"); return; }
+  toast('<span class="spin"></span>กำลังบันทึกลง Google Sheet...',0);
+  let loadedFreshData=false;
+  try{
+    const r=await fetch(CONFIG.POST_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({orderId,rowNumber:o["row_number"],updates})});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+
+    const responseText=await r.text();
+    let result={};
+    try{ result=responseText?JSON.parse(responseText):{}; }catch(_){ result={}; }
+
+    // ถ้า n8n ส่งแถวที่อัปเดตกลับมาแล้ว ไม่ต้อง GET ออเดอร์ทั้งชีตอีกครั้ง
+    if(result.updated===true && String(result.kanban_status||"").toUpperCase()===updates.kanban_status){
+      toast("บันทึก "+orderId+" สำเร็จ ✓");
+      return;
+    }
+
+    // n8n อาจตอบ 200 แม้หาแถวไม่พบ จึงต้องอ่านค่าจริงกลับมาตรวจอีกครั้ง
+    const separator=CONFIG.GET_URL.includes("?")?"&":"?";
+    const verify=await fetch(CONFIG.GET_URL+separator+"_="+Date.now(),{cache:"no-store"});
+    if(!verify.ok) throw new Error("ตรวจสอบผลบันทึกไม่ได้ (HTTP "+verify.status+")");
+    const data=await verify.json();
+    const freshOrders=Array.isArray(data)?data:(data.orders||[]);
+    const saved=freshOrders.find(x=>x["Order ID"]===orderId);
+    orders=freshOrders;
+    loadedFreshData=true;
+    render();
+    if(!saved) throw new Error("ไม่พบ Order ID "+orderId+" หลังบันทึก");
+    if(laneOf(saved)!==targetLane){
+      throw new Error("n8n ตอบว่าสำเร็จ แต่ kanban_status ใน Sheet ยังเป็น '"+(saved["kanban_status"]||"ค่าว่าง")+"'");
+    }
+    toast("บันทึก "+orderId+" สำเร็จ ✓");
+  }catch(e){
+    if(!loadedFreshData){
+      const current=orders.find(x=>x["Order ID"]===orderId);
+      if(current) Object.assign(current,original);
+      render();
+    }
+    toast("บันทึกไม่สำเร็จ: "+e.message,8000);
+  }
+}
+
+/* ═══════ Detail modal ═══════ */
+const SHOW_FIELDS=["วันที่","เบอร์โทร","ที่อยู่","ความหนา","ขนาด","ราคาต่อ ตร.ม","ราคารวม","ยอดมัดจำ","วันที่ชำระมัดจำ","ยอดคงเหลือ","แอดมิน","เพจ","Facebook","ขนส่ง","Tracking No.","ตัดเสร็จวันที่","วันที่ส่ง","วันที่ชำระเงิน","ลูกค้ารับสินค้า","หมายเหตุ"];
+function openDetail(o){
+  document.getElementById("dName").textContent=o["ชื่อ"]||"ไม่ระบุชื่อ";
+  document.getElementById("dId").textContent=(o["Order ID"]||"")+" · สถานะปัจจุบัน: "+LANES.find(l=>l.key===laneOf(o)).title;
+  document.getElementById("dKv").innerHTML=SHOW_FIELDS.filter(f=>o[f]).map(f=>`<dt>${esc(f)}</dt><dd>${esc(o[f])}</dd>`).join("");
+  const mv=document.getElementById("dMoves"); mv.innerHTML="";
+  for(const l of LANES){
+    if(l.key===laneOf(o)) continue;
+    const b=document.createElement("button");
+    b.className="btn "+(l.key==="paid"?"btn-green":l.key==="cancel"?"btn-red":"btn-white");
+    b.textContent="→ "+l.title;
+    b.onclick=()=>{closeOv("ovDetail");moveOrder(o["Order ID"],l.key)};
+    mv.appendChild(b);
+  }
+  openOv("ovDetail");
+}
+
+/* ═══════ UI helpers ═══════ */
+function openOv(id){document.getElementById(id).classList.add("open")}
+function closeOv(id){document.getElementById(id).classList.remove("open")}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+let toastTimer;
+function toast(html,ms=2500){
+  const t=document.getElementById("toast"); t.innerHTML=html; t.classList.add("show");
+  clearTimeout(toastTimer); if(ms>0) toastTimer=setTimeout(()=>t.classList.remove("show"),ms);
+}
+function saveSettings(){
+  CONFIG.GET_URL=document.getElementById("sGet").value.trim();
+  CONFIG.POST_URL=document.getElementById("sPost").value.trim();
+  closeOv("ovSettings"); loadOrders();
+}
+document.getElementById("btnSettings").onclick=()=>{
+  document.getElementById("sGet").value=CONFIG.GET_URL;
+  document.getElementById("sPost").value=CONFIG.POST_URL;
+  openOv("ovSettings");
+};
+document.getElementById("btnReload").onclick=loadOrders;
+document.getElementById("q").addEventListener("input",render);
+document.getElementById("fAdmin").addEventListener("change",render);
+document.getElementById("fThick").addEventListener("change",render);
+document.getElementById("fPayment").addEventListener("change",render);
+document.querySelectorAll(".overlay").forEach(ov=>ov.addEventListener("click",e=>{if(e.target===ov)ov.classList.remove("open")}));
+
+loadOrders();
+</script>
+</body>
+</html>
